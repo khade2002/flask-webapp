@@ -10,13 +10,21 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Test App') {
             steps {
-                sh 'python app.py & sleep 5 && curl http://localhost:5000'
+                sh '''
+                    . venv/bin/activate
+                    python app.py & sleep 5 && curl http://localhost:5000
+                '''
             }
         }
     }
