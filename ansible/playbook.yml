@@ -1,0 +1,40 @@
+---
+- name: Deploy Flask app
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Update apt
+      apt:
+        update_cache: yes
+
+    - name: Install Python3 and pip
+      apt:
+        name: ['python3-pip', 'python3-venv']
+        state: present
+
+    - name: Create app directory
+      file:
+        path: /home/ubuntu/flask_app
+        state: directory
+
+    - name: Copy app files
+      copy:
+        src: "{{ item }}"
+        dest: /home/ubuntu/flask_app/
+        mode: '0755'
+      with_items:
+        - app.py
+        - requirements.txt
+        - templates
+
+    - name: Create virtual environment
+      command: python3 -m venv /home/ubuntu/flask_app/venv
+      args:
+        creates: /home/ubuntu/flask_app/venv
+
+    - name: Install requirements
+      shell: ". /home/ubuntu/flask_app/venv/bin/activate && pip install -r /home/ubuntu/flask_app/requirements.txt"
+
+    - name: Run Flask app
+      shell: ". /home/ubuntu/flask_app/venv/bin/activate && nohup python3 /home/ubuntu/flask_app/app.py &"
