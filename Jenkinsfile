@@ -1,33 +1,39 @@
 pipeline {
     agent any
-
+    
     stages {
         stage('Checkout') {
             steps {
-                // Checkout your code from Git
-                git url: 'https://github.com/khade2002/flask-webapp.git', credentialsId: 'ec2-ssh'
+                checkout scm
             }
         }
-
-        stage('Install dependencies') {
+        
+        stage('Setup Python Env') {
             steps {
                 sh '''
-                    python3 -m venv venv          # create venv folder
-                    . venv/bin/activate           # activate virtual environment
-                    pip install -r requirements.txt  # install dependencies
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
                 '''
             }
         }
-
-        stage('Test') {
+        
+        stage('Run Tests or App') {
             steps {
                 sh '''
-                    . venv/bin/activate           # activate venv again before running tests
-                    python your_test_script.py    # run your tests
+                . venv/bin/activate
+                # Run your Flask app or tests here
+                # For example, to run the Flask app:
+                # python app.py
+                
+                # OR if you have tests, you can run:
+                # pytest
+                
+                # For now, let's just print Flask version to verify env works
+                flask --version
                 '''
             }
         }
-
-        // Other stages...
     }
 }
