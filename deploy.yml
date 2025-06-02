@@ -1,0 +1,50 @@
+---
+- name: Deploy Flask App on EC2
+  hosts: all
+  become: yes
+
+  vars:
+    app_dir: /home/ubuntu/flask-app  # change if needed
+
+  tasks:
+
+    - name: Update APT packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+        state: present
+
+    - name: Ensure application directory exists
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+
+    - name: Clone the Flask app repository
+      git:
+        repo: https://github.com/khade2002/flask-webapp.git
+        dest: "{{ app_dir }}"
+        force: yes
+
+    - name: Create virtual environment
+      command: python3 -m venv venv
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_dir }}/requirements.txt"
+        virtualenv: "{{ app_dir }}/venv"
+
+    - name: Start the Flask app
+      shell: |
+        nohup {{ app_dir }}/venv/bin/python3 {{ app_dir }}/app.py > app.log 2>&1 &
+      args:
+        chdir: "{{ app_dir }}"
